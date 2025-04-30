@@ -1,4 +1,4 @@
-CXXFLAGS=-I/usr/include
+CXXFLAGS=-I./rapidjson/include
 LDFLAGS=-lcurl
 LD=g++
 CC=g++
