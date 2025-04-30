@@ -97,6 +97,11 @@ vector<string> get_neighbors(const string& json_str) {
         for (const auto& neighbor : doc["neighbors"].GetArray())
 	  neighbors.push_back(neighbor.GetString());
       }
+	    
+      if (!doc.IsObject()) {
+    	cerr << "JSON is not an object: " << json_str << endl;
+    	  return neighbors;
+		    
     } catch (const ParseException& e) {
       std::cerr<<"Error while parsing JSON: "<<json_str<<std::endl;
       throw e;
@@ -105,7 +110,7 @@ vector<string> get_neighbors(const string& json_str) {
 }
 
 // BFS Traversal Function
-vector<vector<string>> bfs(CURL* curl, const string& start, int depth) {
+vector<vector<string>> bfs(const string& start, int depth) {
   vector<vector<string>> levels;
   unordered_set<string> visited;
   
@@ -130,6 +135,9 @@ vector<vector<string>> bfs(CURL* curl, const string& start, int depth) {
                         levels[d + 1].push_back(neighbor);
                     }
                 }
+		    
+		curl_easy_cleanup(thread_curl);  // clean up in thread
+		    
             } catch (const ParseException& e) {
                 std::cerr << "Error while fetching neighbors of: " << s << std::endl;
             }
@@ -161,7 +169,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    CURL* curl = curl_easy_init();
     if (!curl) {
         cerr << "Failed to initialize CURL" << endl;
         return -1;
