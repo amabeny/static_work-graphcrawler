@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <curl/curl.h>
 #include <stdexcept>
+#include "rapidjson/document.h"
 #include "rapidjson/error/error.h"
 #include "rapidjson/reader.h"
 #include <chrono>
