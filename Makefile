@@ -1,20 +1,21 @@
-CXX = g++
-CXXFLAGS = -I./rapidjson/include
-LDFLAGS = -lcurl
+CXXFLAGS=-I /usr/local/include 
+LDFLAGS=-lcurl -pthread
+LD=g++
+CC=g++
 
 all: level_client par_level_client
 
 level_client: level_client.o
-	$(CXX) level_client.o -o level_client $(LDFLAGS)
-
-level_client.o: level_client.cpp
-	$(CXX) -c level_client.cpp $(CXXFLAGS)
+	$(LD) $< -o $@ $(LDFLAGS)
 
 par_level_client: par_level_client.o
-	$(CXX) par_level_client.o -o par_level_client $(LDFLAGS)
+	$(LD) $< -o $@ $(LDFLAGS)
 
 par_level_client.o: par_level_client.cpp
-	$(CXX) -c par_level_client.cpp $(CXXFLAGS)
+	$(CC) $(CXXFLAGS) -c $< -o $@
+
+level_client.o: level_client.cpp
+	$(CC) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f level_client level_client.o par_level_client par_level_client.o
+	-rm level_client level_client.o par_level_client par_level_client.o
