@@ -1,25 +1,20 @@
-CXXFLAGS=-I./rapidjson/include
-LDFLAGS=-lcurl
-LD=g++
-CC=g++
+CXX = g++
+CXXFLAGS = -I./rapidjson/include
+LDFLAGS = -lcurl
+
+all: level_client par_level_client
+
+level_client: level_client.o
+	$(CXX) level_client.o -o level_client $(LDFLAGS)
+
+level_client.o: level_client.cpp
+	$(CXX) -c level_client.cpp $(CXXFLAGS)
 
 par_level_client: par_level_client.o
-	$(LD) $< -o $@ $(LDFLAGS)
+	$(CXX) par_level_client.o -o par_level_client $(LDFLAGS)
 
 par_level_client.o: par_level_client.cpp
-	$(CC) -c par_level_client.cpp $(CXXFLAGS)
-
-level_client: level_client.o
-	$(LD) $< -o $@ $(LDFLAGS)
-
-level_client.o: level_client.cpp
-	$(CC) -c level_client.cpp $(CXXFLAGS)
-
-level_client: level_client.o
-	$(CXX) level_client.o -o level_client -lcurl
-
-level_client.o: level_client.cpp
-	$(CXX) -c level_client.cpp -I./rapidjson/include
+	$(CXX) -c par_level_client.cpp $(CXXFLAGS)
 
 clean:
 	rm -f level_client level_client.o par_level_client par_level_client.o
