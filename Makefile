@@ -3,19 +3,19 @@ LDFLAGS=-lcurl
 LD=g++
 CC=g++
 
-all: level_client par_level_client
+all: sequential_client parallel_client
 
-level_client: level_client.o
-	$(LD) $< -o $@ $(LDFLAGS)
+sequential_client: sequential_client.o
+    $(LD) $< -o $@ $(LDFLAGS)
 
-par_level_client: par_level_client.o
-	$(LD) $< -o $@ $(LDFLAGS)
+sequential_client.o: sequential_client.cpp
+    $(CC) $(CXXFLAGS) -c $< -o $@
 
-par_level_client.o: par_level_client.cpp
-	$(CC) $(CXXFLAGS) -c $< -o $@
+parallel_client: level_client.o
+    $(LD) $< -o $@ $(LDFLAGS)
 
 level_client.o: level_client.cpp
-	$(CC) $(CXXFLAGS) -c $< -o $@
+    $(CC) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	-rm -f level_client level_client.o par_level_client par_level_client.o
+    -rm -f sequential_client sequential_client.o parallel_client level_client.o
