@@ -116,11 +116,17 @@ struct ThreadResult {
 };
 
 // Function to be executed by each thread
-ThreadResult process_nodes(CURL* curl, const vector<string>& nodes_to_process, unordered_set<string>& visited, mutex& visited_mutex) {
+ThreadResult process_nodes(const vector<string>& nodes_to_process, unordered_set<string>& visited, mutex& visited_mutex) {
     ThreadResult result;
+    CURL* curl_handle = curl_easy_init(); // Initialize a CURL handle for this thread
+    if (!curl_handle) {
+        cerr << "Error initializing CURL in thread." << endl;
+        return result; // Return early if initialization fails
+    }
+
     for (const string& node : nodes_to_process) {
         try {
-            for (const auto& neighbor : get_neighbors(fetch_neighbors(curl, node))) {
+            for (const auto& neighbor : get_neighbors(fetch_neighbors(curl_handle, node))) {
                 {
                     lock_guard<mutex> lock(visited_mutex);
                     if (visited.find(neighbor) == visited.end()) {
@@ -134,11 +140,12 @@ ThreadResult process_nodes(CURL* curl, const vector<string>& nodes_to_process, u
             std::cerr << "Error processing node " << node << ": " << e.what() << std::endl;
         }
     }
+    curl_easy_cleanup(curl_handle); // Cleanup the CURL handle for this thread
     return result;
 }
 
-// Parallel BFS Traversal Function
-vector<vector<string>> parallel_bfs(CURL* curl, const string& start_node, int depth) {
+// Parallel BFS Traversal Function (modified to pass no CURL* initially)
+vector<vector<string>> parallel_bfs(const string& start_node, int depth) {
     vector<vector<string>> levels;
     unordered_set<string> visited;
     mutex visited_mutex;
@@ -165,7 +172,8 @@ vector<vector<string>> parallel_bfs(CURL* curl, const string& start_node, int de
         for (int i = 0; i < num_threads; ++i) {
             int end_index = start_index + nodes_per_thread + (i < remaining_nodes ? 1 : 0);
             vector<string> nodes_for_thread(current_level_nodes.begin() + start_index, current_level_nodes.begin() + end_index);
-            futures.push_back(async(launch::async, process_nodes, curl, nodes_for_thread, ref(visited), ref(visited_mutex)));
+            // Pass by value for visited and visited_mutex, as each thread gets its own copy's reference
+            futures.push_back(async(launch::async, process_nodes, nodes_for_thread, ref(visited), ref(visited_mutex)));
             start_index = end_index;
         }
 
@@ -198,15 +206,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    CURL* curl = curl_easy_init();
-    if (!curl) {
-        cerr << "Failed to initialize CURL" << endl;
+    // Initialize CURL in the main thread
+    CURL* curl_main = curl_easy_init();
+    if (!curl_main) {
+        cerr << "Failed to initialize CURL in main thread" << endl;
         return -1;
     }
 
     cout << "Parallel BFS Traversal:\n";
     const auto start_parallel = chrono::steady_clock::now();
-    vector<vector<string>> result_parallel = parallel_bfs(curl, start_node, depth);
+    vector<vector<string>> result_parallel = parallel_bfs(start_node, depth); // Don't pass curl_main here
     const auto finish_parallel = chrono::steady_clock::now();
     const chrono::duration<double> elapsed_seconds_parallel = finish_parallel - start_parallel;
 
@@ -218,7 +227,7 @@ int main(int argc, char* argv[]) {
     }
     cout << "Time for parallel crawl: " << elapsed_seconds_parallel.count() << "s\n\n";
 
-    curl_easy_cleanup(curl);
+    curl_easy_cleanup(curl_main); // Cleanup the CURL handle from the main thread
 
     return 0;
 }
