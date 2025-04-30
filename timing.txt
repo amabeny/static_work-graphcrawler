@@ -1,17 +1,19 @@
 Timings for Graph Crawler
 
-Compiler Command: g++ level_client.o -o parallel_client -lcurl  (and similar for sequential)
+Compiler Command: g++ level_client.o -o parallel_client -lcurl - and for sequential
 
 Test Node: "Tom Hanks"
 Traversal Depth: 3
 
 Sequential Version:
+time ./sequential_client "Tom Hanks" 3
 Execution time:
     real    1m25.586s
     user    0m0.098s
     sys     0m0.045s
 
 Parallel Version:
+time ./parallel_client "Tom Hanks" 3
 Execution time:
     real    0m10.932s
     user    0m0.125s
