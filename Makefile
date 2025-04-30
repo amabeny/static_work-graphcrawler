@@ -1,5 +1,5 @@
-CXXFLAGS=-I/usr/include 
-LDFLAGS=-lcurl -pthread
+CXXFLAGS=-I./rapidjson/include -pthread
+LDFLAGS=-lcurl
 LD=g++
 CC=g++
 
@@ -18,5 +18,4 @@ level_client.o: level_client.cpp
     $(CC) $(CXXFLAGS) -c $< -o $@
 
 clean:
-    -rm level_client level_client.o par_level_client par_level_client.o
-    -rm -f level_client par_level_client 
+    -rm -f level_client level_client.o par_level_client par_level_client.o
