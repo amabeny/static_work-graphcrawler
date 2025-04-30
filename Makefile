@@ -22,4 +22,4 @@ level_client.o: level_client.cpp
 	$(CXX) -c level_client.cpp -I./rapidjson/include
 
 clean:
-	-rm level_client level_client.o par_level_client par_level_client.o
+	rm -f level_client level_client.o par_level_client par_level_client.o
