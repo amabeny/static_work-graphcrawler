@@ -15,5 +15,11 @@ level_client: level_client.o
 level_client.o: level_client.cpp
 	$(CC) -c level_client.cpp $(CXXFLAGS)
 
+level_client: level_client.o
+	$(CXX) level_client.o -o level_client -lcurl
+
+level_client.o: level_client.cpp
+	$(CXX) -c level_client.cpp -I./rapidjson/include
+
 clean:
 	-rm level_client level_client.o par_level_client par_level_client.o
