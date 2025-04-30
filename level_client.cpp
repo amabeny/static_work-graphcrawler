@@ -17,7 +17,7 @@
 using namespace std;
 using namespace rapidjson;
 
-bool debug = false;
+bool debug = true; // Enable debugging output
 
 // Updated service URL
 const string SERVICE_URL = "http://hollywood-graph-crawler.bridgesuncc.org/neighbors/";
@@ -54,8 +54,7 @@ string fetch_neighbors(CURL* curl, const string& node) {
     string url = SERVICE_URL + url_encode(curl, node);
     string response;
 
-    if (debug)
-        cout << "Sending request to: " << url << endl;
+    cout << "Sending request to: " << url << endl; // Debug: Print the URL
 
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
@@ -75,12 +74,10 @@ string fetch_neighbors(CURL* curl, const string& node) {
         cerr << "CURL error for " << node << ": " << curl_easy_strerror(res) << endl;
         return "{}";
     } else {
-        if (debug)
-            cout << "CURL request successful for " << node << "!" << endl;
+        cout << "CURL request successful for " << node << "!" << endl;
     }
 
-    if (debug)
-        cout << "Response received for " << node << ": " << response << endl;
+    cout << "Response received for " << node << ": " << response << endl; // Debug: Print the raw response
 
     return response;
 }
@@ -88,13 +85,22 @@ string fetch_neighbors(CURL* curl, const string& node) {
 // Function to parse JSON and extract neighbors
 vector<string> get_neighbors(const string& json_str) {
     vector<string> neighbors;
+    cout << "Parsing JSON: " << json_str << endl; // Debug: Print the JSON string being parsed
     try {
         Document doc;
         doc.Parse(json_str.c_str());
 
         if (doc.HasMember("neighbors") && doc["neighbors"].IsArray()) {
-            for (const auto& neighbor : doc["neighbors"].GetArray())
+            cout << "Found 'neighbors' array." << endl; // Debug
+            for (const auto& neighbor : doc["neighbors"].GetArray()) {
+                cout << "Neighbor found: " << neighbor.GetString() << endl; // Debug
                 neighbors.push_back(neighbor.GetString());
+            }
+        } else {
+            cout << "Warning: 'neighbors' key not found or is not an array." << endl; // Debug
+        }
+        if (doc.HasMember("node") && doc["node"].IsString()) {
+            cout << "Node in response: " << doc["node"].GetString() << endl; // Debug
         }
     } catch (const ParseException& e) {
         std::cerr << "Error while parsing JSON: " << json_str << std::endl;
@@ -154,8 +160,7 @@ vector<vector<string>> parallel_bfs(CURL* curl, const string& start_node, int de
         int remaining_nodes = num_nodes % num_threads;
         int start_index = 0;
 
-        if (debug)
-            cout << "Level " << d << ": Processing " << num_nodes << " nodes with " << num_threads << " threads." << endl;
+        cout << "Level " << d << ": Processing " << num_nodes << " nodes with " << num_threads << " threads." << endl; // Debug
 
         for (int i = 0; i < num_threads; ++i) {
             int end_index = start_index + nodes_per_thread + (i < remaining_nodes ? 1 : 0);
@@ -172,8 +177,7 @@ vector<vector<string>> parallel_bfs(CURL* curl, const string& start_node, int de
             }
         }
         levels[d + 1].assign(next_level_unique_nodes.begin(), next_level_unique_nodes.end());
-        if (debug)
-            cout << "Level " << d + 1 << " found " << levels[d + 1].size() << " unique nodes." << endl;
+        cout << "Level " << d + 1 << " found " << levels[d + 1].size() << " unique nodes." << endl; // Debug
     }
 
     return levels;
